@@ -1,4 +1,4 @@
-package br.com.dio.ecommerce;
+package br.com.ecommerce;
 
 import java.io.*;
 
