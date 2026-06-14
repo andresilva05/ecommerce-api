@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce — Painel</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- CSS Global -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <i class="bi bi-shop me-2"></i>E-commerce
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="index.html">
+                        <i class="bi bi-house-door me-1"></i>Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="produtos.html">
+                        <i class="bi bi-box-seam me-1"></i>Produtos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="pedidos.html">
+                        <i class="bi bi-receipt me-1"></i>Pedidos
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Conteúdo principal -->
+<main class="container py-4">
+
+    <!-- Título -->
+    <div class="mb-4">
+        <h1 class="fw-bold">Painel do Sistema</h1>
+        <p class="text-secondary mb-0">Bem-vindo ao gerenciamento do e-commerce.</p>
+    </div>
+
+    <!-- Cards de resumo -->
+    <div class="row g-4 mb-4" id="summary-cards">
+
+        <div class="col-md-4">
+            <a href="produtos.html" class="card-link">
+                <div class="card card-summary text-center">
+                    <div class="card-body">
+                        <div class="card-icon text-primary"><i class="bi bi-box-seam"></i></div>
+                        <p class="card-title">Produtos Cadastrados</p>
+                        <p class="card-value text-primary" id="total-produtos">—</p>
+                        <small class="text-secondary">Clique para gerenciar</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="pedidos.html" class="card-link">
+                <div class="card card-summary text-center">
+                    <div class="card-body">
+                        <div class="card-icon text-success"><i class="bi bi-receipt"></i></div>
+                        <p class="card-title">Pedidos Realizados</p>
+                        <p class="card-value text-success" id="total-pedidos">—</p>
+                        <small class="text-secondary">Clique para gerenciar</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card card-summary text-center">
+                <div class="card-body">
+                    <div class="card-icon text-warning"><i class="bi bi-clock-history"></i></div>
+                    <p class="card-title">Pedidos Pendentes</p>
+                    <p class="card-value text-warning" id="total-pendentes">—</p>
+                    <small class="text-secondary">Aguardando confirmação</small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Acesso rápido -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="content-section">
+                <h5 class="fw-bold mb-3"><i class="bi bi-lightning me-2"></i>Acesso Rápido</h5>
+                <div class="d-grid gap-2">
+                    <a href="produtos.html" class="btn btn-outline-primary">
+                        <i class="bi bi-box-seam me-2"></i>Gerenciar Produtos
+                    </a>
+                    <a href="pedidos.html" class="btn btn-outline-success">
+                        <i class="bi bi-receipt me-2"></i>Gerenciar Pedidos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="content-section">
+                <h5 class="fw-bold mb-3"><i class="bi bi-info-circle me-2"></i>Sobre o Sistema</h5>
+                <p class="text-secondary mb-2">
+                    Sistema de gerenciamento de e-commerce desenvolvido como projeto final da disciplina de
+                    Web I — TSI.
+                </p>
+                <ul class="list-unstyled text-secondary">
+                    <li><i class="bi bi-check2 text-success me-2"></i>Cadastro de produtos</li>
+                    <li><i class="bi bi-check2 text-success me-2"></i>Controle de pedidos</li>
+                    <li><i class="bi bi-check2 text-success me-2"></i>Filtro por categoria</li>
+                    <li><i class="bi bi-check2 text-success me-2"></i>API REST com Jakarta Servlet</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="text-center py-3 mt-4">
+    <p class="mb-0">E-commerce API &copy; 2026 — Projeto Final Web I</p>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Script do Dashboard -->
+<script>
+    const API_PRODUTOS = 'http://localhost:8080/ecommerce/api/produtos';
+    const API_PEDIDOS  = 'http://localhost:8080/ecommerce/api/pedidos';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        carregarResumo();
+    });
+
+    async function carregarResumo() {
+        try {
+            const [resProdutos, resPedidos] = await Promise.all([
+                fetch(API_PRODUTOS),
+                fetch(API_PEDIDOS)
+            ]);
+
+            const produtos = await resProdutos.json();
+            const pedidos  = await resPedidos.json();
+
+            document.getElementById('total-produtos').textContent = produtos.length;
+            document.getElementById('total-pedidos').textContent   = pedidos.length;
+
+            const pendentes = pedidos.filter(p => p.status === 'PENDENTE').length;
+            document.getElementById('total-pendentes').textContent = pendentes;
+        } catch (err) {
+            console.error('Erro ao carregar resumo:', err);
+            document.getElementById('total-produtos').textContent  = '0';
+            document.getElementById('total-pedidos').textContent    = '0';
+            document.getElementById('total-pendentes').textContent  = '0';
+        }
+    }
+</script>
+
+</body>
+</html>
