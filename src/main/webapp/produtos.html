@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos — E-commerce</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- CSS Global -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <i class="bi bi-shop me-2"></i>E-commerce
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">
+                        <i class="bi bi-house-door me-1"></i>Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="produtos.html">
+                        <i class="bi bi-box-seam me-1"></i>Produtos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="pedidos.html">
+                        <i class="bi bi-receipt me-1"></i>Pedidos
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Conteúdo principal -->
+<main class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold mb-0">Gerenciamento de Produtos</h1>
+        
+        <!-- Filtro por categoria -->
+        <div class="d-flex">
+            <select id="filterCategory" class="form-select me-2" onchange="loadProducts()">
+                <option value="">Todas as categorias</option>
+                <option value="Eletrônicos">Eletrônicos</option>
+                <option value="Roupas">Roupas</option>
+                <option value="Casa">Casa</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Formulário de novo/editar produto -->
+    <div class="card shadow-sm mb-4" id="form-section">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold" id="form-title"><i class="bi bi-plus-circle me-2"></i>Novo Produto</h5>
+        </div>
+        <div class="card-body">
+            <form id="form-produto" onsubmit="handleFormSubmit(event)">
+                <input type="hidden" id="produtoId">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="nome" class="form-label">Nome do Produto</label>
+                        <input type="text" class="form-control" id="nome" placeholder="Ex: Notebook" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="categoria" class="form-label">Categoria</label>
+                        <input type="text" class="form-control" id="categoria" placeholder="Ex: Eletrônicos" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="preco" class="form-label">Preço (R$)</label>
+                        <input type="number" step="0.01" min="0.01" class="form-control" id="preco" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="estoque" class="form-label">Estoque</label>
+                        <input type="number" min="0" class="form-control" id="estoque" required>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <div class="form-check mb-2 w-100">
+                            <input class="form-check-input" type="checkbox" id="ativo" checked>
+                            <label class="form-check-label" for="ativo">
+                                Ativo
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-success" id="btn-submit">
+                        <i class="bi bi-check-lg me-1"></i>Salvar
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="btn-cancel" style="display: none;" onclick="resetForm()">
+                        <i class="bi bi-x-lg me-1"></i>Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Listagem de produtos -->
+    <div class="card shadow-sm" id="list-section">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-list-ul me-2"></i>Catálogo de Produtos</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="tabela-produtos">
+                    <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Categoria</th>
+                        <th>Preço</th>
+                        <th>Estoque</th>
+                        <th>Status</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tbody-produtos">
+                    <!-- preenchido via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="text-center py-3 mt-4">
+    <p class="mb-0">E-commerce API &copy; 2026 — Projeto Final Web I</p>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Scripts da página -->
+<script>
+    const API_URL = 'http://localhost:8080/ecommerce/api/produtos';
+
+    document.addEventListener('DOMContentLoaded', loadProducts);
+
+    async function loadProducts() {
+        const tbody = document.getElementById('tbody-produtos');
+        const category = document.getElementById('filterCategory').value.trim();
+        
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">Carregando produtos...</td></tr>';
+
+        let url = API_URL;
+        if (category) {
+            url += `?categoria=${encodeURIComponent(category)}`;
+        }
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Falha ao buscar produtos');
+            const produtos = await response.json();
+            
+            tbody.innerHTML = '';
+            
+            if (produtos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Nenhum produto encontrado.</td></tr>';
+                return;
+            }
+
+            produtos.forEach(p => {
+                const tr = document.createElement('tr');
+                const badgeClass = p.ativo ? 'bg-success' : 'bg-danger';
+                const badgeText = p.ativo ? 'Ativo' : 'Inativo';
+                
+                tr.innerHTML = `
+                    <td>#${p.id}</td>
+                    <td class="fw-bold">${p.nome}</td>
+                    <td><span class="badge bg-secondary">${p.categoria}</span></td>
+                    <td>R$ ${p.preco.toFixed(2).replace('.', ',')}</td>
+                    <td>${p.estoque} un.</td>
+                    <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick='editProduct(${JSON.stringify(p)})' title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${p.id})" title="Excluir">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (error) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Erro: ${error.message}</td></tr>`;
+        }
+    }
+
+    async function handleFormSubmit(e) {
+        e.preventDefault();
+        
+        const id = document.getElementById('produtoId').value;
+        const produto = {
+            nome: document.getElementById('nome').value,
+            categoria: document.getElementById('categoria').value,
+            preco: parseFloat(document.getElementById('preco').value),
+            estoque: parseInt(document.getElementById('estoque').value),
+            ativo: document.getElementById('ativo').checked
+        };
+
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${API_URL}/${id}` : API_URL;
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(produto)
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.erro || 'Erro ao salvar produto');
+            }
+
+            alert(id ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!');
+            resetForm();
+            loadProducts();
+        } catch (error) {
+            alert(`Erro: ${error.message}`);
+        }
+    }
+
+    function editProduct(produto) {
+        document.getElementById('form-title').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Produto';
+        document.getElementById('produtoId').value = produto.id;
+        document.getElementById('nome').value = produto.nome;
+        document.getElementById('categoria').value = produto.categoria;
+        document.getElementById('preco').value = produto.preco;
+        document.getElementById('estoque').value = produto.estoque;
+        document.getElementById('ativo').checked = produto.ativo;
+        
+        document.getElementById('btn-submit').innerHTML = '<i class="bi bi-check-lg me-1"></i>Atualizar';
+        document.getElementById('btn-cancel').style.display = 'inline-block';
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function deleteProduct(id) {
+        if (!confirm('Tem certeza que deseja excluir este produto?')) return;
+
+        try {
+            const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.erro || 'Erro ao deletar produto');
+            }
+            
+            alert('Produto excluído com sucesso!');
+            loadProducts();
+        } catch (error) {
+            alert(`Erro: ${error.message}`);
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('form-produto').reset();
+        document.getElementById('produtoId').value = '';
+        document.getElementById('form-title').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Novo Produto';
+        document.getElementById('btn-submit').innerHTML = '<i class="bi bi-check-lg me-1"></i>Salvar';
+        document.getElementById('btn-cancel').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
